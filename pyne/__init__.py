@@ -1,6 +1,7 @@
 
 
 from .buffer import *
+from .data import *
 from .experiment import *
 
 

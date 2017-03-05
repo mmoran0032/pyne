@@ -76,16 +76,20 @@ class Buffer:
         return Run(title, date)
 
     def process_all_events(self, buffer, number_events):
+        events = []
         for _ in range(number_events):
             length = (self._convert_int(buffer[:2]) + 1) * self.word_size
             event, buffer = buffer[2:length], buffer[length:]
-            self.convert_single_event(event)
+            event = self.convert_single_event(event)
+            if event is not None and event != 0:
+                events.append(event)
+        return events
 
     def convert_single_event(self, buffer):
         if not buffer.startswith(boundary):
-            count = int(self._decode_bytes(buffer[2:6])[2:4], 16)
+            count = int(self._decode_bytes(buffer[:4])[2:4], 16)
             if count != 0:
-                temp_value = self._decode_bytes(buffer[6:10])
+                temp_value = self._decode_bytes(buffer[4:8])
                 channel = int(temp_value[4:6], 16)
                 valid_bit = ValidBit(int(temp_value[2]))
                 value = '{}{}'.format(temp_value[2:4], temp_value[:2])[1:]
