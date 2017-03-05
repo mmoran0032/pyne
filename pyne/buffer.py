@@ -76,21 +76,29 @@ class Buffer:
         return Run(title, date)
 
     def process_all_events(self, buffer, number_events):
-        events = buffer.split(boundary)[::2][:number_events]
-        return [self.convert_single_event(e) for e in events]
+        for i in range(number_events):
+            length = (self._convert_int(buffer[:2]) + 1) * self.word_size
+            # print(i, length, buffer[:2])
+            event, buffer = buffer[2:length], buffer[length:]
+            # print(event)
+            self.convert_single_event(event, i)
+        # events = buffer.split(boundary)[::2][:number_events]
+        # return [self.convert_single_event(e, i) for i, e in enumerate(events)]
 
-    def convert_single_event(self, buffer):
-        count = int(hexlify(buffer[2:6]).decode('utf-8')[2:4], 16)
-        if count != 0:
-            temp_value = hexlify(buffer[6:10]).decode('utf-8')
-            channel = int(temp_value[4:6], 16)
-            valid_bit = ValidBit(int(temp_value[2]))
-            value = int('{}{}'.format(temp_value[2:4], temp_value[:2])[1:], 16)
-            return Event(count, channel, value,
-                         valid_bit == ValidBit.OVERFLOW,
-                         valid_bit == ValidBit.UNDERFLOW,
-                         valid_bit == ValidBit.VALID)
-        return count
+    def convert_single_event(self, buffer, i):
+        if not buffer.startswith(boundary):
+            count = int(self._decode_bytes(buffer[2:6])[2:4], 16)
+            if count != 0:
+                temp_value = self._decode_bytes(buffer[6:10])
+                channel = int(temp_value[4:6], 16)
+                valid_bit = ValidBit(int(temp_value[2]))
+                value = '{}{}'.format(temp_value[2:4], temp_value[:2])[1:]
+                value = int(value, 16)
+                return Event(count, channel, value,
+                             valid_bit == ValidBit.OVERFLOW,
+                             valid_bit == ValidBit.UNDERFLOW,
+                             valid_bit == ValidBit.VALID)
+            return count
 
     def _convert_word_sequence(self, buffer):
         buffer = [buffer[i:i + self.word_size]
@@ -99,3 +107,6 @@ class Buffer:
 
     def _convert_int(self, b):
         return int.from_bytes(b, byteorder=sys.byteorder)
+
+    def _decode_bytes(self, b):
+        return hexlify(b).decode('utf-8')
