@@ -61,7 +61,7 @@ class Buffer:
 
     def convert_header(self, buffer):
         header = buffer[:self.header_size_bytes]
-        data = self._convert_two_byte_sequence(header[:8])
+        data = self._convert_word_sequence(header[:8])
         words, buffer_type, _, run_number = data
         buffer_number = self._convert_int(header[8:12])
         events = self._convert_int(header[12:14])
@@ -70,14 +70,13 @@ class Buffer:
 
     def convert_run(self, buffer):
         title = buffer[:80].decode('utf-8').replace('\x00', '')
-        date = self._convert_two_byte_sequence(buffer[84:96])
+        date = self._convert_word_sequence(buffer[84:96])
         month, day, year, hour, minute, second = date
         date = datetime(year + 1900, month + 1, day, hour, minute, second)
         return Run(title, date)
 
     def process_all_events(self, buffer, number_events):
         events = buffer.split(boundary)[::2][:number_events]
-        print(len(events), number_events)
         return [self.convert_single_event(e) for e in events]
 
     def convert_single_event(self, buffer):
@@ -85,16 +84,17 @@ class Buffer:
         if count != 0:
             temp_value = hexlify(buffer[6:10]).decode('utf-8')
             channel = int(temp_value[4:6], 16)
-            valid_bit = int(temp_value[2])
+            valid_bit = ValidBit(int(temp_value[2]))
             value = int('{}{}'.format(temp_value[2:4], temp_value[:2])[1:], 16)
             return Event(count, channel, value,
-                         ValidBit(valid_bit) == ValidBit.OVERFLOW,
-                         ValidBit(valid_bit) == ValidBit.UNDERFLOW,
-                         ValidBit(valid_bit) == ValidBit.VALID)
+                         valid_bit == ValidBit.OVERFLOW,
+                         valid_bit == ValidBit.UNDERFLOW,
+                         valid_bit == ValidBit.VALID)
         return count
 
-    def _convert_two_byte_sequence(self, buffer):
-        buffer = [buffer[i:i + 2] for i in range(0, len(buffer), 2)]
+    def _convert_word_sequence(self, buffer):
+        buffer = [buffer[i:i + self.word_size]
+                  for i in range(0, len(buffer), self.word_size)]
         return list(map(self._convert_int, buffer))
 
     def _convert_int(self, b):
