@@ -29,9 +29,7 @@ class Buffer:
     def __init__(self, filename, *,
                  buffer_size=13328, header_size=16, word_size=2):
         self.filename = filename
-        self.buffer_size = buffer_size
         self.buffer_size_bytes = buffer_size * word_size
-        self.header_size = header_size
         self.header_size_bytes = header_size * word_size
         self.word_size = word_size
 
@@ -63,23 +61,18 @@ class Buffer:
 
     def convert_header(self, buffer):
         header = buffer[:self.header_size_bytes]
-        words = int.from_bytes(header[:2], byteorder=sys.byteorder)
-        buffer_type = int.from_bytes(header[2:4], byteorder=sys.byteorder)
-        run_number = int.from_bytes(header[6:8], byteorder=sys.byteorder)
-        buffer_number = int.from_bytes(header[8:12], byteorder=sys.byteorder)
-        events = int.from_bytes(header[12:14], byteorder=sys.byteorder)
-        return Header(words, buffer_type, run_number, buffer_number, events)
+        data = self._convert_two_byte_sequence(header[:8])
+        words, buffer_type, _, run_number = data
+        buffer_number = self._convert_int(header[8:12])
+        events = self._convert_int(header[12:14])
+        return Header(words, Type(buffer_type),
+                      run_number, buffer_number, events)
 
     def convert_run(self, buffer):
         title = buffer[:80].decode('utf-8').replace('\x00', '')
-        date = buffer[84:]
-        month = int.from_bytes(date[:2], byteorder=sys.byteorder) + 1
-        day = int.from_bytes(date[2:4], byteorder=sys.byteorder)
-        year = int.from_bytes(date[4:6], byteorder=sys.byteorder) + 1900
-        hour = int.from_bytes(date[6:8], byteorder=sys.byteorder)
-        minute = int.from_bytes(date[8:10], byteorder=sys.byteorder)
-        second = int.from_bytes(date[10:12], byteorder=sys.byteorder)
-        date = datetime(year, month, day, hour, minute, second)
+        date = self._convert_two_byte_sequence(buffer[84:96])
+        month, day, year, hour, minute, second = date
+        date = datetime(year + 1900, month + 1, day, hour, minute, second)
         return Run(title, date)
 
     def process_all_events(self, buffer, number_events):
@@ -99,3 +92,10 @@ class Buffer:
                          ValidBit(valid_bit) == ValidBit.UNDERFLOW,
                          ValidBit(valid_bit) == ValidBit.VALID)
         return count
+
+    def _convert_two_byte_sequence(self, buffer):
+        buffer = [buffer[i:i + 2] for i in range(0, len(buffer), 2)]
+        return list(map(self._convert_int, buffer))
+
+    def _convert_int(self, b):
+        return int.from_bytes(b, byteorder=sys.byteorder)
