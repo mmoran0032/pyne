@@ -2,6 +2,7 @@
 
 from .buffer import *
 from .data import *
+from .detector import *
 from .experiment import *
 
 

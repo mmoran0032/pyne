@@ -80,9 +80,7 @@ class Buffer:
         for _ in range(number_events):
             length = (self._convert_int(buffer[:2]) + 1) * self.word_size
             event, buffer = buffer[2:length], buffer[length:]
-            event = self.convert_single_event(event)
-            if event is not None and event != 0:
-                events.append(event)
+            events.append(self.convert_single_event(event))
         return events
 
     def convert_single_event(self, buffer):

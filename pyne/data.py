@@ -9,13 +9,14 @@
 import numpy
 
 from . import buffer
+from . import detector
 
 
 class Data:
     def __init__(self, filename):
         self.buffer = buffer.Buffer(filename)
         self.run_information = {}
-        self.adc = []
+        self.adc = detector.Detector(32)
         self.events = {'valid': 0, 'overflow': 0, 'underflow': 0}
 
     def read_buffer(self):
@@ -26,6 +27,7 @@ class Data:
             while desc.type != buffer.Type.FOOTER:
                 self.get_events(desc, info)
                 desc, info = b.process_buffer()
+            self.adc = list(map(numpy.array, self.adc))
             self.get_end_information(desc, info)
 
     def get_start_information(self, desc, info):
@@ -42,4 +44,11 @@ class Data:
         self.run_information['run_time'] = (end - start).seconds
 
     def get_events(self, desc, info):
-        pass
+        assert desc.events == len(info)
+        for event in info:
+            if event is not None and event != 0:
+                self.events['valid'] += event.valid
+                self.events['underflow'] += event.underflow
+                self.events['overflow'] += event.overflow
+                if event.valid:
+                    self.adc[event.channel].append(event.value)
