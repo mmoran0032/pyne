@@ -6,8 +6,6 @@
 '''
 
 
-import numpy
-
 from . import buffer
 from . import detector
 
@@ -27,8 +25,8 @@ class Data:
             while desc.type != buffer.Type.FOOTER:
                 self.get_events(desc, info)
                 desc, info = b.process_buffer()
-            self.adc = list(map(numpy.array, self.adc))
             self.get_end_information(desc, info)
+        self.adc.convert_channels()
 
     def get_start_information(self, desc, info):
         self.run_information['run_number'] = desc.run
@@ -51,4 +49,4 @@ class Data:
                 self.events['underflow'] += event.underflow
                 self.events['overflow'] += event.overflow
                 if event.valid:
-                    self.adc[event.channel].append(event.value)
+                    self.adc.add_event(event.channel, event.value)

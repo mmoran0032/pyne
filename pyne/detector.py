@@ -2,11 +2,13 @@
 
 from collections.abc import Sequence
 
+import numpy
+
 
 class Detector(Sequence):
     def __init__(self, channels):
-        self.chanels = channels
-        self.adc = [self._add_channel() for _ in range(self.channels)]
+        self.channels = channels
+        self.adc = [list() for _ in range(self.channels)]
 
     def __getitem__(self, index):
         return self.adc[index]
@@ -14,5 +16,8 @@ class Detector(Sequence):
     def __len__(self):
         return self.channels
 
-    def _add_channel(self):
-        return list()
+    def add_event(self, channel, value):
+        self.adc[channel].append(value)
+
+    def convert_channels(self):
+        self.adc = list(map(numpy.array, self.adc))

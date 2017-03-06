@@ -9,7 +9,7 @@ with open('README.rst', 'r') as f:
 with open('LICENSE', 'r') as f:
     license = f.read()
 
-with open('wcf/__init__.py', 'r') as f:
+with open('pyne/__init__.py', 'r') as f:
     data = f.read().split('\n')
     for line in data:
         if line.startswith('__version__'):
