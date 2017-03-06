@@ -1,14 +1,15 @@
 
 
 from collections.abc import Sequence
+from collections import defaultdict
 import os
-import re
 
 
 class Experiment(Sequence):
     def __init__(self, data_directory='data'):
         self.data_directory = data_directory
         self.runs = []
+        self.runs_grouped = defaultdict(list)
 
     def __getitem__(self, run_number):
         index = self.run_numbers.index(run_number)
@@ -20,22 +21,19 @@ class Experiment(Sequence):
     def __iter__(self):
         yield self.runs
 
-    def find_runs(self, *, extension='.evt', format=None):
+    def find_runs(self, *, extension='.evt'):
         files = os.listdir(self.data_directory)
-        if format is not None:
-            files = self._filter_by_format(files, format)
-        else:
-            files = sorted(f for f in files if f.endswith(extension))
-        self.runs = files
+        files = sorted(f for f in files if f.endswith(extension))
+        self.runs = ['{}/{}'.format(self.data_directory, f) for f in files]
         self.run_numbers = self._extract_run_numbers(self.runs)
-
-    def _filter_by_format(self, files, format):
-        pattern = re.compile(format)
-        return sorted(list(filter(pattern.match, files)))
 
     def _extract_run_numbers(self, names):
         return [self._extract_single_number(n) for n in names]
 
-    def _extract_single_number(self, name):
+    def _extract_single_number(self, path):
+        name = path.split('/')[1]
         number = name.split('-')[0].replace('run', '')
         return int(number)
+
+    def group_runs(self, category, *group):
+        self.runs_grouped[category].extend(group)
