@@ -32,8 +32,8 @@ class Detector(Sequence):
         self.counts[-4:] = 0
         self.total_counts = self.counts.sum()
 
-    def apply_calibration(self, f, *pars):
-        self.calibrated = f(self.bins, *pars)
+    def set_calibration(self, values):
+        self.calibrated = values
 
     def display(self, figsize=(8, 6)):
         fig = plt.figure(figsize=figsize)
