@@ -6,11 +6,13 @@ from scipy.signal import find_peaks_cwt
 import statsmodels.api as sm
 
 import pyne
+from . import h5_interface
 
 
 class Analysis:
-    def __init__(self, data_directory):
+    def __init__(self, data_directory, out_directory):
         self.data_directory = data_directory
+        self.out_directory = out_directory
         self.e = pyne.Experiment(self.data_directory)
         self.e.find_runs()
 
@@ -19,9 +21,18 @@ class Analysis:
         self.calibration_run = pyne.Data(self.e[run_number])
         self.calibration_run.read_buffer()
         self.calibration_run.adc.convert_detectors()
+        self.calibration_run.adc = self.calibration_run.adc[16:]
         print('Applying calibration...')
         for adc in self.calibration_run.adc:
             self.calibrate_single_detector(adc)
+        print('Saving file...')
+        hdf = h5_interface.File('calibration.h5')
+        for adc in self.calibration_run.adc:
+            hdf.save_array('{}/bins'.format(adc.name), adc.bins)
+            hdf.save_array('{}/energy'.format(adc.name), adc.calibrated)
+            hdf.save_array('{}/counts'.format(adc.name), adc.counts)
+        hdf.save_array('run_info', self.calibration_run.run_information)
+        hdf.save_array('event_info', self.calibration_run.events)
 
     def calibrate_single_detector(self, adc):
         peaks = self._find_calibration_peaks(adc.counts)

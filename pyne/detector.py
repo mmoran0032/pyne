@@ -35,23 +35,21 @@ class Detector(Sequence):
     def set_calibration(self, values):
         self.calibrated = values
 
-    def display(self, figsize=(8, 6), log=False):
+    def display(self, figsize=(8, 6), log=False, calibrated=True):
         fig = plt.figure(figsize=figsize)
         axis = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         if self.counts is None:
             self.convert_channels()
-        if self.calibrated is not None:
-            plot_x = self.calibrated[1:]
+        if calibrated:
+            plot_x = self.calibrated[1:] if self.calibrated else self.bins[1:]
         else:
             plot_x = self.bins[1:]
         if log:
             axis.semilogy(plot_x, self.counts)
-            axis.set_ylim((1, (self.counts.max() % 100 + 1) * 100))
         else:
             axis.plot(plot_x, self.counts)
-        axis.set_xlim((0, plot_x[-1]))
         axis.set_title(self.name)
-        return fig
+        return fig, axis
 
 
 class DetectorArray(Sequence):
