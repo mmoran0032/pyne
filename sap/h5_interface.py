@@ -3,6 +3,7 @@
 import os
 
 import h5py
+import numpy
 
 
 class File:
@@ -19,6 +20,17 @@ class File:
             data = f[name][:]
         return data
 
+    def save_attribute(self, name, value):
+        with h5py.File(self._path, 'w') as f:
+            f.attrs[name] = numpy.string_(value)
+
+    def read_attribute(self, name):
+        with h5py.File(self._path, 'r') as f:
+            value = f.attrs[name]
+        return value
+
     @property
     def _path(self):
-        return os.path.join(self.out_directory, self.filename)
+        if not self.path:
+            self.path = os.path.join(self.out_directory, self.filename)
+        return self.path

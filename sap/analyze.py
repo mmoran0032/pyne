@@ -26,13 +26,7 @@ class Analysis:
         for adc in self.calibration_run.adc:
             self.calibrate_single_detector(adc)
         print('Saving file...')
-        hdf = h5_interface.File('calibration.h5')
-        for adc in self.calibration_run.adc:
-            hdf.save_array('{}/bins'.format(adc.name), adc.bins)
-            hdf.save_array('{}/energy'.format(adc.name), adc.calibrated)
-            hdf.save_array('{}/counts'.format(adc.name), adc.counts)
-        hdf.save_array('run_info', self.calibration_run.run_information)
-        hdf.save_array('event_info', self.calibration_run.events)
+        self.save_h5_file('calibration.h5', self.calibration_run)
 
     def calibrate_single_detector(self, adc):
         peaks = self._find_calibration_peaks(adc.counts)
@@ -68,3 +62,14 @@ class Analysis:
             bins = sm.add_constant(bins)
         result = sm.OLS(calibration_energies, centers).fit()
         return result.predict(bins)
+
+    def save_h5_file(self, filename, run):
+        hdf = h5_interface.File(filename)
+        for adc in run.adc:
+            hdf.save_array('{}/bins'.format(adc.name), adc.bins)
+            hdf.save_array('{}/energy'.format(adc.name), adc.calibrated)
+            hdf.save_array('{}/counts'.format(adc.name), adc.counts)
+        for key, value in run.run_information.iteritems():
+            hdf.save_attribute(key, value)
+        for key, value in run.events.iteritems():
+            hdf.save_attribute('events/{}'.format(key), value)
