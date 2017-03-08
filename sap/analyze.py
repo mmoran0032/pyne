@@ -5,7 +5,7 @@ from scipy.optimize import curve_fit
 from scipy.signal import find_peaks_cwt
 import statsmodels.api as sm
 
-from .. import pyne
+import pyne
 
 
 class Analysis:
@@ -15,9 +15,11 @@ class Analysis:
         self.e.find_runs()
 
     def calibrate(self, run_number):
+        print('Loading run {}...'.format(run_number))
         self.calibration_run = pyne.Data(self.e[run_number])
         self.calibration_run.read_buffer()
         self.calibration_run.adc.convert_detectors()
+        print('Applying calibration...')
         for adc in self.calibration_run.adc:
             self.calibrate_single_detector(adc)
 
@@ -30,7 +32,8 @@ class Analysis:
     def _find_calibration_peaks(self, counts, threshold=100):
         peaks = find_peaks_cwt(counts, numpy.array([200, 225, 250]))
         heights = counts[peaks]
-        new_peaks = peaks[heights > threshold]
+        indices = numpy.where(heights > threshold)[0]
+        new_peaks = numpy.take(peaks, indices)
         assert new_peaks.shape[0] == 2
         return new_peaks
 

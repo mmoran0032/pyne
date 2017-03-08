@@ -26,7 +26,7 @@ class Data:
                 self._get_events(desc, info)
                 desc, info = b.process_buffer()
             self._get_end_information(desc, info)
-        self.adc.convert_channels()
+        self.adc.convert_detectors()
 
     def _get_start_information(self, desc, info):
         self.run_information['run_number'] = desc.run
