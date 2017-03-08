@@ -64,12 +64,12 @@ class Analysis:
         return result.predict(bins)
 
     def save_h5_file(self, filename, run):
-        hdf = h5_interface.File(filename)
+        hdf = h5_interface.H5File(filename)
         for adc in run.adc:
             hdf.save_array('{}/bins'.format(adc.name), adc.bins)
             hdf.save_array('{}/energy'.format(adc.name), adc.calibrated)
             hdf.save_array('{}/counts'.format(adc.name), adc.counts)
-        for key, value in run.run_information.iteritems():
+        for key, value in run.run_information.items():
             hdf.save_attribute(key, value)
-        for key, value in run.events.iteritems():
+        for key, value in run.events.items():
             hdf.save_attribute('events/{}'.format(key), value)

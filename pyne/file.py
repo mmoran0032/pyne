@@ -6,10 +6,19 @@ import h5py
 import numpy
 
 
-class File:
-    def __init__(self, filename, out_directory='data_processed'):
+class H5File:
+    def __init__(self, filename, out_directory='data_processed', access='r'):
         self.filename = filename
         self.out_directory = out_directory
+        self.path = None
+        self.access = access
+
+    def __enter__(self):
+        self.f = h5py.File(self._path, self.access)
+        return self
+
+    def __exit__(self, *args):
+        self.f.close()
 
     def save_array(self, name, data):
         with h5py.File(self._path, 'w') as f:
@@ -22,7 +31,7 @@ class File:
 
     def save_attribute(self, name, value):
         with h5py.File(self._path, 'w') as f:
-            f.attrs[name] = numpy.string_(value)
+            f.attrs[name] = value
 
     def read_attribute(self, name):
         with h5py.File(self._path, 'r') as f:
@@ -31,6 +40,6 @@ class File:
 
     @property
     def _path(self):
-        if not self.path:
+        if self.path is None:
             self.path = os.path.join(self.out_directory, self.filename)
         return self.path
