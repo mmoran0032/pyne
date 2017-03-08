@@ -15,10 +15,10 @@ class Analysis:
         self.e.find_runs()
 
     def calibrate(self, run_number):
-        self.run = pyne.Data(self.e[run_number])
-        self.run.read_buffer()
-        self.run.adc.convert_detectors()
-        for adc in self.run.adc:
+        self.calibration_run = pyne.Data(self.e[run_number])
+        self.calibration_run.read_buffer()
+        self.calibration_run.adc.convert_detectors()
+        for adc in self.calibration_run.adc:
             self.calibrate_single_detector(adc)
 
     def calibrate_single_detector(self, adc):
