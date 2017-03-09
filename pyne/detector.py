@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import numpy
 
 
-class Detector(Sequence):
-    def __init__(self, channels, name=''):
+class Detector:
+    def __init__(self, name='', channels=4096):
         self.name = name
         self.channels = channels
         self.bins = numpy.arange(self.channels + 1)
@@ -15,12 +15,6 @@ class Detector(Sequence):
         self.counts = None
         self.total_counts = None
         self.calibrated = None
-
-    def __getitem__(self, index):
-        return self.adc[index]
-
-    def __len__(self):
-        return self.channels
 
     def add_event(self, value):
         self.adc.append(value)
@@ -41,7 +35,7 @@ class Detector(Sequence):
         if self.counts is None:
             self.convert_channels()
         if calibrated:
-            plot_x = self.calibrated[1:] if self.calibrated else self.bins[1:]
+            plot_x = self.calibrated if self.calibrated else self.bins[1:]
         else:
             plot_x = self.bins[1:]
         if log:
@@ -55,7 +49,7 @@ class Detector(Sequence):
 class DetectorArray(Sequence):
     def __init__(self, num_detectors, channels):
         self.number = num_detectors
-        self.detectors = [Detector(channels, 'adc_{:02d}'.format(i))
+        self.detectors = [Detector('adc_{:02d}'.format(i), channels)
                           for i in range(self.number)]
 
     def __getitem__(self, index):

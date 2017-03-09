@@ -1,24 +1,21 @@
-''' data.py -- holds processed data
-
-    Data creates a pyne.Buffer for the given filename and extracts the
-    information from it. It stores the run information and, if requested,
-    converts the data event stream into useful units.
-'''
 
 
 from . import buffer
 from . import detector
+from . import file
+
+date_format = '%Y-%m-%dT%H:%M:%S'
 
 
 class Data:
-    def __init__(self, filename):
-        self.buffer = buffer.Buffer(filename)
+    def __init__(self, buffer_file, output_file):
+        self.buffer_file = buffer_file
+        self.output_file = output_file
         self.run_information = {}
         self.adc = detector.DetectorArray(32, 4096)
-        self.events = {'valid': 0, 'overflow': 0, 'underflow': 0}
 
     def read_buffer(self):
-        with self.buffer as b:
+        with buffer.Buffer(self.buffer_file) as b:
             desc, info = b.process_buffer()
             self._get_start_information(desc, info)
             desc, info = b.process_buffer()
@@ -26,7 +23,6 @@ class Data:
                 self._get_events(desc, info)
                 desc, info = b.process_buffer()
             self._get_end_information(desc, info)
-        self.adc.convert_detectors()
 
     def _get_start_information(self, desc, info):
         self.run_information['run_number'] = desc.run
@@ -44,9 +40,24 @@ class Data:
     def _get_events(self, desc, info):
         assert desc.events == len(info)
         for event in info:
-            if event is not None and event != 0:
-                self.events['valid'] += event.valid
-                self.events['underflow'] += event.underflow
-                self.events['overflow'] += event.overflow
-                if event.valid:
-                    self.adc.add_event(event.channel, event.value)
+            if event is not None and event != 0 and event.valid:
+                self.adc.add_event(event.channel, event.value)
+
+    def convert_data(self):
+        self.adc.convert_detectors()
+        start, end = (self.run_information['start_time'],
+                      self.run_information['end_time'])
+        self.run_information['start_time'] = start.strftime(date_format)
+        self.run_information['end_time'] = end.strftime(date_format)
+
+    def save_data(self):
+        with file.File(self.output_file, access='w') as f:
+            f.save_attributes(self.run_information)
+            for adc in self.adc:
+                f.save_adc(adc.name, adc.channels, adc.counts, adc.calibrated)
+
+    def read_data(self):
+        with file.File(self.output_file, access='r') as f:
+            self.run_information = f.read_attributes()
+            for adc in self.adc:
+                adc.channels, adc.counts, adc.calibrated = f.read_adc(adc.name)

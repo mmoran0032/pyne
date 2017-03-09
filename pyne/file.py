@@ -9,8 +9,8 @@ class File:
     def __init__(self, filename, out_directory='data_processed', access='r'):
         self.filename = filename
         self.out_directory = out_directory
-        self.path = None
         self.access = access
+        self.path = None
 
     def __enter__(self):
         self.f = h5py.File(self._path, self.access)
@@ -19,23 +19,24 @@ class File:
     def __exit__(self, *args):
         self.f.close()
 
-    def save_array(self, name, data):
-        with h5py.File(self._path, 'w') as f:
-            f.create_dataset(name, data=data)
+    def save_attributes(self, **attributes):
+        for key, value in attributes.items():
+            self.f.create_dataset(key, data=value)
 
-    def read_array(self, name):
-        with h5py.File(self._path, 'r') as f:
-            data = f[name][:]
-        return data
+    def save_adc(self, name, bins, counts, energies):
+        adc = self.f.create_group(name)
+        adc.attrs['bins'] = bins
+        adc.create_dataset('counts', data=counts)
+        adc.create_dataset('energies', data=energies)
 
-    def save_attribute(self, name, value):
-        with h5py.File(self._path, 'w') as f:
-            f.attrs[name] = value
+    def read_attributes(self):
+        return {key: value for key, value in self.f.attrs.items()}
 
-    def read_attribute(self, name):
-        with h5py.File(self._path, 'r') as f:
-            value = f.attrs[name]
-        return value
+    def read_adc(self, name):
+        bins = self.f['{}/bins'.format(name)]
+        counts = self.f['{}/counts'.format(name)]
+        energies = self.f['{}/energies'.format(name)]
+        return bins, counts, energies
 
     @property
     def _path(self):

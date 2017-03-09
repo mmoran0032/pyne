@@ -6,7 +6,6 @@ from scipy.signal import find_peaks_cwt
 import statsmodels.api as sm
 
 import pyne
-from . import h5_interface
 
 
 class Analysis:
@@ -64,7 +63,7 @@ class Analysis:
         return result.predict(bins)
 
     def save_h5_file(self, filename, run):
-        hdf = h5_interface.H5File(filename)
+        hdf = pyne.File(filename)
         for adc in run.adc:
             hdf.save_array('{}/bins'.format(adc.name), adc.bins)
             hdf.save_array('{}/energy'.format(adc.name), adc.calibrated)
