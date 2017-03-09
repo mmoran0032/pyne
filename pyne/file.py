@@ -3,10 +3,9 @@
 import os
 
 import h5py
-import numpy
 
 
-class H5File:
+class File:
     def __init__(self, filename, out_directory='data_processed', access='r'):
         self.filename = filename
         self.out_directory = out_directory
