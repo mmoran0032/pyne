@@ -33,9 +33,6 @@ class Data:
         assert self.run_information['run_number'] == desc.run
         assert self.run_information['title'] == info.title
         self.run_information['end_time'] = info.date
-        start, end = (self.run_information['start_time'],
-                      self.run_information['end_time'])
-        self.run_information['run_time'] = (end - start).seconds
 
     def _get_events(self, desc, info):
         assert desc.events == len(info)
@@ -47,6 +44,7 @@ class Data:
         self.adc.convert_detectors()
         start, end = (self.run_information['start_time'],
                       self.run_information['end_time'])
+        self.run_information['run_time'] = (end - start).seconds
         self.run_information['start_time'] = start.strftime(date_format)
         self.run_information['end_time'] = end.strftime(date_format)
 
@@ -54,10 +52,10 @@ class Data:
         with file.File(self.output_file, access='w') as f:
             f.save_attributes(self.run_information)
             for adc in self.adc:
-                f.save_adc(adc.name, adc.channels, adc.counts, adc.calibrated)
+                f.save_adc(adc.name, adc.channels, adc.counts, adc.energies)
 
     def read_data(self):
         with file.File(self.output_file, access='r') as f:
             self.run_information = f.read_attributes()
             for adc in self.adc:
-                adc.channels, adc.counts, adc.calibrated = f.read_adc(adc.name)
+                adc.channels, adc.counts, adc.energies = f.read_adc(adc.name)

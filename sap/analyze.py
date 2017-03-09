@@ -17,7 +17,7 @@ class Analysis:
 
     def calibrate(self, run_number):
         print('Loading run {}...'.format(run_number))
-        self.calibration_run = pyne.Data(self.e[run_number])
+        self.calibration_run = pyne.Data(self.e[run_number], 'calibration.h5')
         self.calibration_run.read_buffer()
         self.calibration_run.adc.convert_detectors()
         self.calibration_run.adc = self.calibration_run.adc[16:]
@@ -25,7 +25,7 @@ class Analysis:
         for adc in self.calibration_run.adc:
             self.calibrate_single_detector(adc)
         print('Saving file...')
-        self.save_h5_file('calibration.h5', self.calibration_run)
+        self.calibration_run.save_data()
 
     def calibrate_single_detector(self, adc):
         peaks = self._find_calibration_peaks(adc.counts)
@@ -61,14 +61,3 @@ class Analysis:
             bins = sm.add_constant(bins)
         result = sm.OLS(calibration_energies, centers).fit()
         return result.predict(bins)
-
-    def save_h5_file(self, filename, run):
-        hdf = pyne.File(filename)
-        for adc in run.adc:
-            hdf.save_array('{}/bins'.format(adc.name), adc.bins)
-            hdf.save_array('{}/energy'.format(adc.name), adc.calibrated)
-            hdf.save_array('{}/counts'.format(adc.name), adc.counts)
-        for key, value in run.run_information.items():
-            hdf.save_attribute(key, value)
-        for key, value in run.events.items():
-            hdf.save_attribute('events/{}'.format(key), value)

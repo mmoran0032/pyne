@@ -14,7 +14,7 @@ class Detector:
         self.adc = []
         self.counts = None
         self.total_counts = None
-        self.calibrated = None
+        self.energies = None
 
     def add_event(self, value):
         self.adc.append(value)
@@ -27,7 +27,7 @@ class Detector:
         self.total_counts = self.counts.sum()
 
     def set_calibration(self, values):
-        self.calibrated = values
+        self.energies = values
 
     def display(self, figsize=(8, 6), log=False, calibrated=True):
         fig = plt.figure(figsize=figsize)
@@ -35,7 +35,7 @@ class Detector:
         if self.counts is None:
             self.convert_channels()
         if calibrated:
-            plot_x = self.calibrated if self.calibrated else self.bins[1:]
+            plot_x = self.energies if self.energies else self.bins[1:]
         else:
             plot_x = self.bins[1:]
         if log:
