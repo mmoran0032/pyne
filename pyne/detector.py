@@ -34,10 +34,10 @@ class Detector:
         axis = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         if self.counts is None:
             self.convert_channels()
-        if calibrated:
-            plot_x = self.energies if self.energies else self.bins[1:]
+        if calibrated and self.energies is not None:
+            plot_x = self.energies
         else:
-            plot_x = self.bins[1:]
+            plot_x = self.bins[:-1]
         if log:
             axis.semilogy(plot_x, self.counts)
         else:

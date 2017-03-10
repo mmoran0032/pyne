@@ -1,5 +1,7 @@
 
 
+import os
+
 from . import buffer
 from . import detector
 from . import file
@@ -13,6 +15,14 @@ class Data:
         self.output_file = output_file
         self.run_information = {}
         self.adc = detector.DetectorArray(32, 4096)
+
+    def load_data(self):
+        if os.path.isfile(self.output_file):
+            self.read_data()
+        else:
+            print('reading from buffer...this may take some time')
+            self.read_buffer()
+            self.convert_data()
 
     def read_buffer(self):
         with buffer.Buffer(self.buffer_file) as b:
@@ -49,13 +59,17 @@ class Data:
         self.run_information['end_time'] = end.strftime(date_format)
 
     def save_data(self):
-        with file.File(self.output_file, access='w') as f:
-            f.save_attributes(self.run_information)
-            for adc in self.adc:
-                f.save_adc(adc.name, adc.channels, adc.counts, adc.energies)
+        print('writing to {}...'.format(self.output_file))
+        f = file.File(self.output_file, 'w')
+        f.save_attributes(self.run_information)
+        for adc in self.adc:
+            f.save_adc(adc.name, adc.channels, adc.counts, adc.energies)
+        f.close()
 
     def read_data(self):
-        with file.File(self.output_file, access='r') as f:
-            self.run_information = f.read_attributes()
-            for adc in self.adc:
-                adc.channels, adc.counts, adc.energies = f.read_adc(adc.name)
+        print('reading from {}...'.format(self.output_file))
+        f = file.File(self.output_file, 'r')
+        self.run_information = f.read_attributes()
+        for adc in self.adc:
+            adc.channels, adc.counts, adc.energies = f.read_adc(adc.name)
+        f.close()
