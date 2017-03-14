@@ -21,12 +21,14 @@ class Analysis:
         self.calibration_run.load_data()
         self.calibration_run.adc = self.calibration_run.adc
         print('Applying calibration...')
+        for adc in self.calibration_run.adc[:16]:
+            adc.set_calibration(adc.bins[:-1])
         for adc in self.calibration_run.adc[16:]:
-            self.calibrate_single_detector(adc)
+            self._calibrate_single_detector(adc)
         print('Saving file...')
         self.calibration_run.save_data()
 
-    def calibrate_single_detector(self, adc):
+    def _calibrate_single_detector(self, adc):
         peaks = self._find_calibration_peaks(adc)
         peak_centers = self._fit_data(adc.bins[:-1], adc.counts, peaks)
         calibrated = self._find_calibration(peak_centers, adc.bins)
