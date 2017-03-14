@@ -7,5 +7,5 @@ from .experiment import *
 from .file import *
 
 
-__version__ = '0.2.5'
+__version__ = '0.2.7'
 __author__ = 'Mike Moran'

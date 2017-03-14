@@ -14,21 +14,19 @@ class Detector:
         self.bins = numpy.arange(self.channels + 1)
         self.adc = []
         self.counts = None
-        self.total_counts = None
         self.energies = None
 
     def add_event(self, channel, value):
         self.adc.append(value)
 
     def convert_detector(self):
-        if not self.binned:
-            self.counts, _ = numpy.histogram(self.adc, bins=self.bins)
-        else:
+        if self.binned:
             self.counts = numpy.array(self.adc)
+        else:
+            self.counts, _ = numpy.histogram(self.adc, bins=self.bins)
         # ensure first and last bins don't contain under/overflow
         self.counts[:3] = 0
         self.counts[-4:] = 0
-        self.total_counts = self.counts.sum()
 
     def set_calibration(self, values):
         self.energies = values
@@ -38,10 +36,11 @@ class Detector:
         axis = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         if self.counts is None:
             self.convert_channels()
-        if calibrated and self.energies is not None:
+        if calibrated and self.energies and self.energies.sum() != 0:
+            print('  using calibrated spectra')
             plot_x = self.energies
         else:
-            plot_x = self.bins[:-1]
+            plot_x = numpy.arange(self.channels)
         if log:
             axis.semilogy(plot_x, self.counts)
         else:
