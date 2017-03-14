@@ -158,7 +158,8 @@ class CHN_Buffer(Buffer):
     def _save_runtime(self, time_buffer):
         temp = self._decode_bytes(time_buffer)
         temp = '{}{}{}{}'.format(temp[6:8], temp[4:6], temp[2:4], temp[:2])
-        self._run_time = timedelta(seconds=int(temp, 16))
+        temp = int(temp, 16) / 50  # time was clicks of a 50 Hz clock
+        self._run_time = timedelta(seconds=temp)
 
     def process_all_events(self, buffer, number_events):
         return [0, 0, 0, 0, 0, 0, 0, 0]
