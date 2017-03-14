@@ -21,15 +21,21 @@ class Experiment(Sequence):
     def __iter__(self):
         yield self.runs
 
-    def find_runs(self, *, extension='.evt'):
+    def find_all(self):
+        self.find_runs()
+        self.find_auxiliary()
+        print('{} evt and {} aux found'.format(
+            len(self.data_runs), len(self.aux_runs)))
+
+    def find_runs(self):
         files = os.listdir(self.data_directory)
-        files = sorted(f for f in files if f.endswith(extension))
+        files = sorted(f for f in files if f.endswith('.evt'))
         self.data_runs = [os.path.join(self.data_directory, f) for f in files]
-        self.out_runs = self._create_processed_file_list(files)
+        self.out_runs = self._create_processed_file_list(files, '-')
         self.run_numbers = self._extract_run_numbers(self.data_runs)
 
-    def _create_processed_file_list(self, files):
-        basenames = ['{}.h5'.format(f.split('-')[0]) for f in files]
+    def _create_processed_file_list(self, files, split_char):
+        basenames = ['{}.h5'.format(f.split(split_char)[0]) for f in files]
         return [os.path.join(self.out_directory, f) for f in basenames]
 
     def _extract_run_numbers(self, names):
@@ -39,3 +45,9 @@ class Experiment(Sequence):
         name = path.split('/')[1]
         number = name.split('-')[0].replace('run', '')
         return int(number)
+
+    def find_auxiliary(self):
+        files = os.listdir(self.data_directory)
+        files = sorted(f for f in files if not f.endswith('evt'))
+        self.aux_runs = [os.path.join(self.data_directory, f) for f in files]
+        self.aux_out = self._create_processed_file_list(files, '.')

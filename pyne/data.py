@@ -10,9 +10,10 @@ date_format = '%Y-%m-%dT%H:%M:%S'
 
 
 class Data:
-    def __init__(self, buffer_file, output_file):
+    def __init__(self, buffer_file, output_file, verbose=False):
         self.buffer_file = buffer_file
         self.output_file = output_file
+        self.verbose = verbose
         self.run_information = {}
         if self._is_evt_buffer():
             self.adc = detector.DetectorArray(32, 4096)
@@ -23,6 +24,8 @@ class Data:
 
     def load_data(self):
         if os.path.isfile(self.output_file):
+            if self._is_chn_buffer():
+                self.adc = [self.adc]
             self.read_data()
         else:
             print('reading from buffer...this may take some time')
@@ -31,12 +34,12 @@ class Data:
 
     def read_buffer(self):
         with self.buffer_type(self.buffer_file) as b:
-            desc, info = b.process_buffer()
+            desc, info = b.process_buffer(self.verbose)
             self._get_start_information(desc, info)
-            desc, info = b.process_buffer()
+            desc, info = b.process_buffer(self.verbose)
             while desc.type != b.Type.FOOTER:
                 self._get_events(desc, info)
-                desc, info = b.process_buffer()
+                desc, info = b.process_buffer(self.verbose)
             self._get_end_information(desc, info)
 
     def _get_start_information(self, desc, info):
