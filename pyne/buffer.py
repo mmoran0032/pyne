@@ -158,11 +158,18 @@ class CHN_Buffer(Buffer):
     def _save_runtime(self, time_buffer):
         temp = self._decode_bytes(time_buffer)
         temp = '{}{}{}{}'.format(temp[6:8], temp[4:6], temp[2:4], temp[:2])
-        temp = int(temp, 16) / 50  # time was clicks of a 50 Hz clock
+        temp = int(temp, 16) / 50  # time: clicks of a 50 Hz clock
         self._run_time = timedelta(seconds=temp)
 
     def process_all_events(self, buffer, number_events):
-        return [0, 0, 0, 0, 0, 0, 0, 0]
+        events = []
+        for index in range(0, self.buffer_size_bytes // 2, 2):
+            start, stop = index * self.word_size, (index + 1) * self.word_size
+            value = self._convert_int(buffer[start:stop])
+            events.append(Event(1, self.current_channel, value,
+                          False, False, True))
+            self.current_channel += 1
+        return events
 
     def convert_footer(self, buffer):
         title = self.filename[:-4]

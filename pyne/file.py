@@ -17,8 +17,8 @@ class File:
     def save_adc(self, name, bins, counts, energies):
         adc = self.f.create_group(name)
         adc.attrs['bins'] = bins
-        adc.create_dataset('counts', data=counts)
-        adc.create_dataset('energies', data=energies)
+        adc.create_dataset('counts', data=counts, shape=(bins,))
+        adc.create_dataset('energies', data=energies, shape=(bins,))
 
     def read_attributes(self):
         return {key: value for key, value in self.f.attrs.items()}

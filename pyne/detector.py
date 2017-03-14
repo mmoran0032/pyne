@@ -7,20 +7,24 @@ import numpy
 
 
 class Detector:
-    def __init__(self, name='', channels=4096):
+    def __init__(self, name='adc', channels=4096, binned=False):
         self.name = name
         self.channels = channels
+        self.binned = binned
         self.bins = numpy.arange(self.channels + 1)
         self.adc = []
         self.counts = None
         self.total_counts = None
         self.energies = None
 
-    def add_event(self, value):
+    def add_event(self, channel, value):
         self.adc.append(value)
 
-    def convert_channels(self):
-        self.counts, _ = numpy.histogram(self.adc, bins=self.bins)
+    def convert_detector(self):
+        if not self.binned:
+            self.counts, _ = numpy.histogram(self.adc, bins=self.bins)
+        else:
+            self.counts = numpy.array(self.adc)
         # ensure first and last bins don't contain under/overflow
         self.counts[:3] = 0
         self.counts[-4:] = 0
@@ -59,8 +63,8 @@ class DetectorArray(Sequence):
         return self.number
 
     def add_event(self, channel, value):
-        self.detectors[channel].add_event(value)
+        self.detectors[channel].add_event(None, value)
 
-    def convert_detectors(self):
+    def convert_detector(self):
         for detector in self.detectors:
-            detector.convert_channels()
+            detector.convert_detector()

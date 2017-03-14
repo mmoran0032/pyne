@@ -13,15 +13,13 @@ class Data:
     def __init__(self, buffer_file, output_file):
         self.buffer_file = buffer_file
         self.output_file = output_file
-        self.buffer_type = self._determine_buffer_type()
         self.run_information = {}
-        self.adc = detector.DetectorArray(32, 4096)
-
-    def _determine_buffer_type(self):
-        if self.buffer_file.endswith('.evt'):
-            return buffer.EVT_Buffer
-        elif self.buffer_file.endswith('.Chn'):
-            return buffer.CHN_Buffer
+        if self._is_evt_buffer():
+            self.adc = detector.DetectorArray(32, 4096)
+            self.buffer_type = buffer.EVT_Buffer
+        elif self._is_chn_buffer():
+            self.adc = detector.Detector(channels=2048, binned=True)
+            self.buffer_type = buffer.CHN_Buffer
 
     def load_data(self):
         if os.path.isfile(self.output_file):
@@ -58,7 +56,9 @@ class Data:
                 self.adc.add_event(event.channel, event.value)
 
     def convert_data(self):
-        self.adc.convert_detectors()
+        self.adc.convert_detector()
+        if self._is_chn_buffer():
+            self.adc = [self.adc]
         start, end = (self.run_information['start_time'],
                       self.run_information['end_time'])
         self.run_information['run_time'] = (end - start).seconds
@@ -80,3 +80,9 @@ class Data:
         for adc in self.adc:
             adc.channels, adc.counts, adc.energies = f.read_adc(adc.name)
         f.close()
+
+    def _is_evt_buffer(self):
+        return self.buffer_file.endswith('.evt')
+
+    def _is_chn_buffer(self):
+        return self.buffer_file.endswith('.Chn')
