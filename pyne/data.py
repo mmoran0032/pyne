@@ -13,8 +13,15 @@ class Data:
     def __init__(self, buffer_file, output_file):
         self.buffer_file = buffer_file
         self.output_file = output_file
+        self.buffer_type = self._determine_buffer_type()
         self.run_information = {}
         self.adc = detector.DetectorArray(32, 4096)
+
+    def _determine_buffer_type(self):
+        if self.buffer_file.endswith('.evt'):
+            return buffer.EVT_Buffer
+        elif self.buffer_file.endswith('.Chn'):
+            return buffer.CHN_Buffer
 
     def load_data(self):
         if os.path.isfile(self.output_file):
@@ -25,11 +32,11 @@ class Data:
             self.convert_data()
 
     def read_buffer(self):
-        with buffer.Buffer(self.buffer_file) as b:
+        with self.buffer_type(self.buffer_file) as b:
             desc, info = b.process_buffer()
             self._get_start_information(desc, info)
             desc, info = b.process_buffer()
-            while desc.type != buffer.Type.FOOTER:
+            while desc.type != b.Type.FOOTER:
                 self._get_events(desc, info)
                 desc, info = b.process_buffer()
             self._get_end_information(desc, info)
