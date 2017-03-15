@@ -42,7 +42,7 @@ class Detector:
         else:
             plot_x = numpy.arange(self.channels)
         if log:
-            axis.semilogy(plot_x, self.counts)
+            axis.semilogy(plot_x, self.counts, nonposy='clip')
         else:
             axis.plot(plot_x, self.counts)
         axis.set_title(self.name)

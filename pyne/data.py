@@ -10,7 +10,7 @@ date_format = '%Y-%m-%dT%H:%M:%S'
 
 
 class Data:
-    def __init__(self, buffer_file, output_file, verbose=False):
+    def __init__(self, buffer_file=None, output_file=None, verbose=False):
         self.buffer_file = buffer_file
         self.output_file = output_file
         self.verbose = verbose
