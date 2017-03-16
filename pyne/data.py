@@ -10,17 +10,22 @@ date_format = '%Y-%m-%dT%H:%M:%S'
 
 
 class Data:
-    def __init__(self, buffer_file=None, output_file=None, verbose=False):
+    def __init__(self, buffer_file=None, output_file=None, *,
+                 buffer_type='evt', verbose=False):
         self.buffer_file = buffer_file
         self.output_file = output_file
         self.verbose = verbose
         self.run_information = {}
-        if self._is_evt_buffer():
+        if self._is_evt_buffer(buffer_type):
             self.adc = detector.DetectorArray(32, 4096)
             self.buffer_type = buffer.EVT_Buffer
-        elif self._is_chn_buffer():
+        elif self._is_chn_buffer(buffer_type):
             self.adc = detector.Detector(channels=2048, binned=True)
             self.buffer_type = buffer.CHN_Buffer
+        else:
+            print('detector not automatically determined',
+                  'please set values manually before reading/loading data',
+                  sep='\n')
 
     def load_data(self):
         if os.path.isfile(self.output_file):
@@ -84,8 +89,8 @@ class Data:
             adc.channels, adc.counts, adc.energies = f.read_adc(adc.name)
         f.close()
 
-    def _is_evt_buffer(self):
-        return self.buffer_file.endswith('.evt')
+    def _is_evt_buffer(self, b_type):
+        return self.buffer_file.endswith('.evt') or b_type.lower() == 'evt'
 
-    def _is_chn_buffer(self):
-        return self.buffer_file.endswith('.Chn')
+    def _is_chn_buffer(self, b_type):
+        return self.buffer_file.endswith('.Chn') or b_type.lower() == 'chn'
