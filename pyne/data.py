@@ -16,10 +16,13 @@ class Data:
         self.output_file = output_file
         self.verbose = verbose
         self.run_information = {}
-        if self._is_evt_buffer(buffer_type):
+        self._set_buffer_detector_types(buffer_type)
+
+    def _set_buffer_detector_types(self, type):
+        if self._is_evt_buffer(type):
             self.adc = detector.DetectorArray(32, 4096)
             self.buffer_type = buffer.EVT_Buffer
-        elif self._is_chn_buffer(buffer_type):
+        elif self._is_chn_buffer(type):
             self.adc = detector.Detector(channels=2048, binned=True)
             self.buffer_type = buffer.CHN_Buffer
         else:
@@ -94,3 +97,4 @@ class Data:
 
     def _is_chn_buffer(self, b_type):
         return self.buffer_file.endswith('.Chn') or b_type.lower() == 'chn'
+
