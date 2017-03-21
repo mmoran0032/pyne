@@ -10,6 +10,13 @@ class File:
         self.access = access
         self.f = h5py.File(self.filename, self.access)
 
+    def __enter__(self):
+        self.f = h5py.File(self.filename, self.access)
+        return self
+
+    def __exit__(self, *args):
+        self.close()
+
     def save_attributes(self, attributes):
         for key, value in attributes.items():
             self.f.attrs[key] = value
