@@ -36,13 +36,14 @@ class Detector:
         axis = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         if self.counts is None:
             self.convert_channels()
-        if calibrated and self.energies and self.energies.sum() != 0:
+        if calibrated and self.energies.any() and self.energies.sum() != 0:
             print('  using calibrated spectra')
             plot_x = self.energies
         else:
             plot_x = numpy.arange(self.channels)
         if log:
             axis.semilogy(plot_x, self.counts, nonposy='clip')
+            axis.set_ylim((0.1, 1000))
         else:
             axis.plot(plot_x, self.counts)
         axis.set_title(self.name)

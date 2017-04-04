@@ -5,10 +5,11 @@ import numpy
 
 
 class File:
-    def __init__(self, filename, access='r'):
+    def __init__(self, filename, access='r', *, open=False):
         self.filename = filename
         self.access = access
-        self.f = h5py.File(self.filename, self.access)
+        if open:
+            self.__enter__()
 
     def __enter__(self):
         self.f = h5py.File(self.filename, self.access)

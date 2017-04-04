@@ -10,21 +10,22 @@ date_format = '%Y-%m-%dT%H:%M:%S'
 
 
 class Data:
-    def __init__(self, buffer_file=None, output_file=None, *,
-                 buffer_type='evt', verbose=False):
+    def __init__(self, buffer_type, buffer_file=None, output_file=None,
+                 verbose=False):
         self.buffer_file = buffer_file
         self.output_file = output_file
+        self.buffer_type = buffer_type
         self.verbose = verbose
         self.run_information = {}
-        self._set_buffer_detector_types(buffer_type)
+        self._set_buffer_detector_types()
 
-    def _set_buffer_detector_types(self, type):
-        if self._is_evt_buffer(type):
+    def _set_buffer_detector_types(self):
+        if self._is_evt_buffer():
             self.adc = detector.DetectorArray(32, 4096)
-            self.buffer_type = buffer.EVT_Buffer
-        elif self._is_chn_buffer(type):
+            self.buffer = buffer.EVT_Buffer
+        elif self._is_chn_buffer():
             self.adc = detector.Detector(channels=2048, binned=True)
-            self.buffer_type = buffer.CHN_Buffer
+            self.buffer = buffer.CHN_Buffer
         else:
             print('detector not automatically determined',
                   'please set values manually before reading/loading data',
@@ -41,7 +42,7 @@ class Data:
             self.convert_data()
 
     def read_buffer(self):
-        with self.buffer_type(self.buffer_file) as b:
+        with self.buffer(self.buffer_file) as b:
             desc, info = b.process_buffer(self.verbose)
             self._get_start_information(desc, info)
             desc, info = b.process_buffer(self.verbose)
@@ -78,23 +79,20 @@ class Data:
 
     def save_data(self):
         print('writing to {}...'.format(self.output_file))
-        f = file.File(self.output_file, 'w')
-        f.save_attributes(self.run_information)
-        for adc in self.adc:
-            f.save_adc(adc.name, adc.channels, adc.counts, adc.energies)
-        f.close()
+        with file.File(self.output_file, 'w') as f:
+            f.save_attributes(self.run_information)
+            for adc in self.adc:
+                f.save_adc(adc.name, adc.channels, adc.counts, adc.energies)
 
     def read_data(self):
         print('reading from {}...'.format(self.output_file))
-        f = file.File(self.output_file, 'r')
-        self.run_information = f.read_attributes()
-        for adc in self.adc:
-            adc.channels, adc.counts, adc.energies = f.read_adc(adc.name)
-        f.close()
+        with file.File(self.output_file, 'r') as f:
+            self.run_information = f.read_attributes()
+            for adc in self.adc:
+                adc.channels, adc.counts, adc.energies = f.read_adc(adc.name)
 
-    def _is_evt_buffer(self, b_type):
-        return self.buffer_file.endswith('.evt') or b_type.lower() == 'evt'
+    def _is_evt_buffer(self):
+        return self.buffer_type.lower() == 'evt'
 
-    def _is_chn_buffer(self, b_type):
-        return self.buffer_file.endswith('.Chn') or b_type.lower() == 'chn'
-
+    def _is_chn_buffer(self):
+        return self.buffer_type.lower() == 'chn'
