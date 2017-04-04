@@ -1,6 +1,8 @@
 
 
 from .analyze import *
+from .calibration import *
+from .display import *
 
 __author__ = 'Mike Moran'
-__version__ = '2017-03-14'
+__version__ = '2017-04-04'

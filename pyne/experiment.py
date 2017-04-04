@@ -13,7 +13,7 @@ class Experiment(Sequence):
 
     def __getitem__(self, run_number):
         index = self.run_numbers.index(run_number)
-        return data.Data(self.data_runs[index], self.out_runs[index])
+        return data.Data('evt', self.data_runs[index], self.out_runs[index])
 
     def __len__(self):
         return len(self.runs)
