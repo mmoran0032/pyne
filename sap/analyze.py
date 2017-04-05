@@ -9,8 +9,6 @@ class Analyze:
     def __init__(self, data, name):
         self.data = data
         self.name = name
-        fig, _ = self.display_array()
-        fig.savefig('{}_array.png'.format(self.name))
 
     def determine_energy_window(self, sigma_window=(7, 7), **pargs):
         good_detectors = self.data.adc[16:]
@@ -19,8 +17,6 @@ class Analyze:
         energy_range = self._get_energy_range(fit_pars, sigma_window)
         fig, _ = self.single_plot(central_det, fit_pars, energy_range, **pargs)
         fig.savefig('{}_energy_window.png'.format(self.name))
-        fig, _ = self.display_array(None, energy_range, **pargs)
-        fig.savefig('{}_energy_window_array.png'.format(self.name))
         return energy_range
 
     def _find_best_detector(self, detectors):
@@ -56,22 +52,24 @@ class Analyze:
         return peak_range.sum()
 
     def single_plot(self, detector, fit_pars=None, energy_range=None, *,
-                    figsize=(10, 7.5), xlim=(0, 4000), ylim=(0.1, 1000)):
+                    figsize=(10, 7.5), xlim=(0, 4000), ylim=(1, 1000)):
         fig = plt.figure(figsize=figsize)
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         # nonposy='clip' wasn't working for this single case, so do it yourself
         counts = np.where(detector.counts > 0, detector.counts, 1e-10)
-        ax.semilogy(detector.energies, counts, nonposy='clip')
+        ax.semilogy(detector.energies, counts,
+                    nonposy='clip', linestyle='steps-mid')
         ax = self._adjust_ax(ax, fit_pars, energy_range, xlim, ylim)
         ax.set_title(detector.name)
         return fig, ax
 
     def display_array(self, fit_pars=None, energy_range=None, *,
-                      figsize=(10, 7.5), xlim=(0, 4000), ylim=(0.1, 1000)):
+                      figsize=(10, 7.5), xlim=(0, 4000), ylim=(1, 1000)):
         fig, axes = plt.subplots(nrows=4, ncols=4, figsize=figsize)
         axis = axes.ravel()
         for ax, adc in zip(axis, self.data.adc[16:]):
-            ax.semilogy(adc.energies, adc.counts, nonposy='clip')
+            ax.semilogy(adc.energies, adc.counts,
+                        nonposy='clip', linestyle='steps-mid')
             ax = self._adjust_ax(ax, fit_pars, energy_range, xlim, ylim)
             ax.set_title(adc.name)
         fig.tight_layout()

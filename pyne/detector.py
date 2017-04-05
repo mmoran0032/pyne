@@ -18,14 +18,15 @@ class Detector:
     def add_event(self, channel, value):
         self.adc.append(value)
 
-    def convert_detector(self):
+    def convert_detector(self, mask=True):
         if self.binned:
             self.counts = np.array(self.adc)
         else:
             self.counts, _ = np.histogram(self.adc, bins=self.bins)
-        # ensure first and last bins don't contain under/overflow
-        self.counts[:3] = 0
-        self.counts[-4:] = 0
+        if mask:
+            # ensure first and last bins don't contain under/overflow
+            self.counts[:3] = 0
+            self.counts[-4:] = 0
 
     def set_calibration(self, values):
         self.energies = values

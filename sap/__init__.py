@@ -2,7 +2,6 @@
 
 from .analyze import *
 from .calibration import *
-from .display import *
 from .experiment import *
 
 __author__ = 'Mike Moran'
