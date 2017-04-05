@@ -96,3 +96,13 @@ class Data:
 
     def _is_chn_buffer(self):
         return self.buffer_type.lower() == 'chn'
+
+
+class EVTData(Data):
+    def __init__(self):
+        pass
+
+
+class CHNData(Data):
+    def __init__(self):
+        pass

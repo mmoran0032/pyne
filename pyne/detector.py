@@ -3,7 +3,7 @@
 from collections.abc import Sequence
 
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 
 
 class Detector:
@@ -11,7 +11,7 @@ class Detector:
         self.name = name
         self.channels = channels
         self.binned = binned
-        self.bins = numpy.arange(self.channels + 1)
+        self.bins = np.arange(self.channels + 1)
         self.adc = []
         self.counts = None
         self.energies = None
@@ -21,9 +21,9 @@ class Detector:
 
     def convert_detector(self):
         if self.binned:
-            self.counts = numpy.array(self.adc)
+            self.counts = np.array(self.adc)
         else:
-            self.counts, _ = numpy.histogram(self.adc, bins=self.bins)
+            self.counts, _ = np.histogram(self.adc, bins=self.bins)
         # ensure first and last bins don't contain under/overflow
         self.counts[:3] = 0
         self.counts[-4:] = 0
@@ -40,7 +40,7 @@ class Detector:
             print('  using calibrated spectra')
             plot_x = self.energies
         else:
-            plot_x = numpy.arange(self.channels)
+            plot_x = np.arange(self.channels)
         if log:
             axis.semilogy(plot_x, self.counts, nonposy='clip')
             axis.set_ylim((0.1, 1000))

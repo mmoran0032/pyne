@@ -1,7 +1,7 @@
 
 
 import h5py
-import numpy
+import numpy as np
 
 
 class File:
@@ -34,8 +34,8 @@ class File:
     def read_adc(self, name):
         adc_group = self.f[name]
         bins = adc_group.attrs['bins']
-        counts = numpy.array(adc_group['counts'])
-        energies = numpy.array(adc_group['energies'])
+        counts = np.array(adc_group['counts'])
+        energies = np.array(adc_group['energies'])
         return bins, counts, energies
 
     def close(self):
