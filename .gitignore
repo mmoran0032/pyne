@@ -1,3 +1,7 @@
 *.evt
+
 *.ipynb_checkpoints
 dist/
+build/
+
+.coverage
