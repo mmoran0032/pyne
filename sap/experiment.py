@@ -7,7 +7,7 @@ import pyne
 
 class Experiment:
     def __init__(self, raw_directory, h5_directory, *,
-                 raw_file='run{:03d}-13328\.evt', h5_file='run{:03d}\.h5'):
+                 raw_file='run{:03d}-13328.evt', h5_file='run{:03d}.h5'):
         self.raw_directory = raw_directory
         self.raw_file = raw_file
         self.h5_directory = h5_directory
