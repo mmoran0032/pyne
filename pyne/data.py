@@ -92,10 +92,10 @@ class CHNData(Data):
         print('reading from {}...'.format(self.data_file))
         self.run_information = self.f.read_attributes()
         adc = self.adc
-        adc.channels, adc.counts, adc.energies = self.f.read_adc('adc')
+        adc.bins, adc.counts, adc.energies = self.f.read_adc('adc')
 
     def save_data(self):
-        print('writing to {}...'.format(self.output_file))
+        print('writing to {}...'.format(self.data_file))
         self.f.save_attributes(self.run_information)
         adc = self.adc
         self.f.save_adc(adc.name, adc.bins, adc.counts, adc.energies)
