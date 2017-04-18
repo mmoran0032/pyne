@@ -47,6 +47,6 @@ class DetectorArray(Sequence):
     def add_event(self, channel, value):
         self.detectors[channel].add_event(None, value)
 
-    def convert_detector(self):
+    def convert_detector(self, mask=True):
         for detector in self.detectors:
-            detector.convert_detector()
+            detector.convert_detector(mask)

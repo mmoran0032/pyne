@@ -28,8 +28,8 @@ class Buffer:
     def __exit__(self, *args):
         self.f.close()
 
-    def process_buffer(self, verbose):
-        desc, data = self.read_buffer(verbose)
+    def process_buffer(self):
+        desc, data = self.read_buffer()
         if desc.type == self.Type.HEADER:
             info = self.convert_header(data)
         elif desc.type == self.Type.DATA:
@@ -41,7 +41,7 @@ class Buffer:
             info = 0
         return desc, info
 
-    def read_buffer(self, verbose):
+    def read_buffer(self):
         raise NotImplementedError
 
     def convert_header(self, buffer):
@@ -74,12 +74,10 @@ class EVT_Buffer(Buffer):
                                 {'VALID': 4, 'UNDERFLOW': 2, 'OVERFLOW': 1})
         self.boundary = b'\xff\xff\xff\xff'
 
-    def read_buffer(self, verbose):
+    def read_buffer(self):
         buffer = self.f.read(self.buffer_size_bytes)
         desc = self._convert_buffer_header(buffer)
         data = buffer[self.header_size_bytes:desc.words * self.word_size]
-        if verbose:
-            print(desc, data, sep='\n')
         return desc, data
 
     def _convert_buffer_header(self, buffer):
@@ -133,12 +131,10 @@ class CHN_Buffer(Buffer):
         self.current_channel = 0
         self.number_channels = 0
 
-    def read_buffer(self, verbose):
+    def read_buffer(self):
         buffer = self.f.read(self.buffer_size_bytes)
         buffer_type = self._check_buffer_type(buffer[:self.word_size])
         desc = Header(0, self.Type(buffer_type), 0, 0, 8)
-        if verbose:
-            print(desc, buffer, sep='\n')
         return desc, buffer
 
     def _check_buffer_type(self, b):
