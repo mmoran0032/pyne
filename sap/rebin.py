@@ -5,8 +5,7 @@ from scipy.integrate import quad
 
 
 class Rebinner:
-    def __init__(self, adc, *, rebinnned_counts=None, rebinnned_energies=None):
-        self.adc = adc
+    def __init__(self, *, rebinnned_counts=None, rebinnned_energies=None):
         self.rb_counts = rebinnned_counts
         self.rb_energies = rebinnned_energies
 
@@ -15,22 +14,26 @@ class Rebinner:
         self.rb_energies = np.linspace(low, high, bin_count)
         self.rb_counts = np.zeros(bin_count)
 
-    def rebin(self):
-        insertion, energy_stack = self._find_insertion_points(self.rb_energies)
-        easy_counts, hard_counts = self._divide_counts(insertion)
+    def rebin(self, adc, fresh_array=True):
+        if fresh_array:
+            self.rb_counts
+        insertion, energy_stack = self._find_insertion_points(
+            adc, self.rb_energies)
+        easy_counts, hard_counts = self._divide_counts(adc, insertion)
         self._rebin_easy_counts(easy_counts, insertion)
-        self._rebin_hard_counts(hard_counts, insertion, energy_stack)
+        self._rebin_hard_counts(adc, hard_counts, insertion, energy_stack)
+        return self.rb_counts, self.rb_energies
 
-    def _find_insertion_points(self, new_energies):
-        temp = np.copy(self.adc.energies)
+    def _find_insertion_points(self, adc, new_energies):
+        temp = np.copy(adc.energies)
         temp = np.append(temp, 2 * temp[-1] - temp[-2])
         energy_stack = np.vstack((temp[:-1], temp[1:])).T
         return np.searchsorted(new_energies, energy_stack), energy_stack
 
-    def _divide_counts(self, insertion_points):
+    def _divide_counts(self, adc, insertion_points):
         mask = insertion_points[:, 0] == insertion_points[:, 1]
-        easy_counts = np.where(mask, self.adc.counts, 0)
-        hard_counts = np.where(mask, 0, self.adc.counts)
+        easy_counts = np.where(mask, adc.counts, 0)
+        hard_counts = np.where(mask, 0, adc.counts)
         return easy_counts, hard_counts
 
     def _rebin_easy_counts(self, counts, insertion_points):
@@ -39,23 +42,23 @@ class Rebinner:
         for index, value in data:
             self.rb_counts[index] += value
 
-    def _rebin_hard_counts(self, counts, insertion_points, energy_stack):
+    def _rebin_hard_counts(self, adc, counts, insertion_points, energy_stack):
         data = np.vstack((*insertion_points.T, counts, *energy_stack.T)).T
         data = data[np.where(data[:, 2])]
         for index_0, index_1, value, energy_0, energy_1 in data:
             index_0, index_1, value = int(index_0), int(index_1), int(value)
-            local_poly = self._create_local_polynomial(index_0)
+            local_poly = self._create_local_polynomial(adc, index_0)
             energy_data = [energy_0, energy_1, self.rb_energies[index_0]]
             counts = self._redistribute_counts(value, local_poly, energy_data)
             self.rb_counts[index_0] += counts[0]
             self.rb_counts[index_1] += counts[1]
 
-    def _create_local_polynomial(self, index):
+    def _create_local_polynomial(self, adc, index):
         locations = [self.rb_energies[index - 2],
                      self.rb_energies[index + 2]]
-        energy_locs = np.searchsorted(self.adc.energies, locations)
-        pars = np.polyfit(np.take(self.adc.energies, np.arange(*energy_locs)),
-                          np.take(self.adc.counts, np.arange(*energy_locs)),
+        energy_locs = np.searchsorted(adc.energies, locations)
+        pars = np.polyfit(np.take(adc.energies, np.arange(*energy_locs)),
+                          np.take(adc.counts, np.arange(*energy_locs)),
                           deg=5)
         return np.poly1d(pars)
 

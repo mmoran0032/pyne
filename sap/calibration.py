@@ -15,6 +15,7 @@ class Calibrator:
     def find_calibration(self):
         for adc in self.cal_data.adc[16:]:
             self._calibrate_single_detector(adc)
+        self.cal_data.save_data()
 
     def calibrate(self, data):
         for adc, cal_adc in zip(data.adc[16:], self.cal_data.adc[16:]):
@@ -27,7 +28,6 @@ class Calibrator:
         peak_centers = self._fit_data(adc.bins[:-1], adc.counts, peaks)
         energies = self._find_calibration(peak_centers, adc.bins)
         adc.set_calibration(energies)
-        self.cal_data.save_data()
 
     def _find_calibration_peaks(self, adc, threshold=50):
         peaks = find_peaks_cwt(adc.counts, np.array([175, 200, 225, 250]))
