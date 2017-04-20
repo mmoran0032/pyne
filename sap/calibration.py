@@ -27,6 +27,7 @@ class Calibrator:
         peak_centers = self._fit_data(adc.bins[:-1], adc.counts, peaks)
         energies = self._find_calibration(peak_centers, adc.bins)
         adc.set_calibration(energies)
+        self.cal_data.save_data()
 
     def _find_calibration_peaks(self, adc, threshold=50):
         peaks = find_peaks_cwt(adc.counts, np.array([175, 200, 225, 250]))
