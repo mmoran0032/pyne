@@ -9,31 +9,30 @@ class Rebinner:
         self.rb_counts = rebinnned_counts
         self.rb_energies = rebinnned_energies
 
-    def create_arrays(self, low=0, high=7000, width=20):  # energies in keV
+    def create_arrays(self, low=0, high=7000, width=10):  # energies in keV
         bin_count = int((high - low) / width) + 1
         self.rb_energies = np.linspace(low, high, bin_count)
         self.rb_counts = np.zeros(bin_count)
 
     def rebin(self, adc, fresh_array=True):
         if fresh_array:
-            self.rb_counts
+            self.rb_counts = np.zeros(self.rb_energies.shape)
         insertion, energy_stack = self._find_insertion_points(
-            adc, self.rb_energies)
-        easy_counts, hard_counts = self._divide_counts(adc, insertion)
+            adc.energies, self.rb_energies)
+        easy_counts, hard_counts = self._divide_counts(adc.counts, insertion)
         self._rebin_easy_counts(easy_counts, insertion)
         self._rebin_hard_counts(adc, hard_counts, insertion, energy_stack)
         return self.rb_counts, self.rb_energies
 
-    def _find_insertion_points(self, adc, new_energies):
-        temp = np.copy(adc.energies)
-        temp = np.append(temp, 2 * temp[-1] - temp[-2])
+    def _find_insertion_points(self, old_energies, new_energies):
+        temp = np.append(old_energies, 2 * old_energies[-1] - old_energies[-2])
         energy_stack = np.vstack((temp[:-1], temp[1:])).T
         return np.searchsorted(new_energies, energy_stack), energy_stack
 
-    def _divide_counts(self, adc, insertion_points):
+    def _divide_counts(self, counts, insertion_points):
         mask = insertion_points[:, 0] == insertion_points[:, 1]
-        easy_counts = np.where(mask, adc.counts, 0)
-        hard_counts = np.where(mask, 0, adc.counts)
+        easy_counts = np.where(mask, counts, 0)
+        hard_counts = np.where(mask, 0, counts)
         return easy_counts, hard_counts
 
     def _rebin_easy_counts(self, counts, insertion_points):
@@ -53,17 +52,22 @@ class Rebinner:
             self.rb_counts[index_0] += counts[0]
             self.rb_counts[index_1] += counts[1]
 
-    def _create_local_polynomial(self, adc, index):
-        locations = [self.rb_energies[index - 2],
-                     self.rb_energies[index + 2]]
+    def _create_local_polynomial(self, adc, index, degree=5):
+        locations = [self.rb_energies[index] - 40,
+                     self.rb_energies[index] + 40]
         energy_locs = np.searchsorted(adc.energies, locations)
         pars = np.polyfit(np.take(adc.energies, np.arange(*energy_locs)),
                           np.take(adc.counts, np.arange(*energy_locs)),
-                          deg=5)
+                          deg=degree)
         return np.poly1d(pars)
 
     def _redistribute_counts(self, counts, poly, energies):
-        p = (quad(poly, energies[0], energies[2])[0] /
-             quad(poly, energies[0], energies[1])[0])  # [0] ignores error term
+        if counts < 10:
+            # low statistics, so simple overlap
+            p = (energies[2] - energies[0]) / (energies[1] - energies[0])
+        else:
+            integrals = (quad(poly, energies[0], energies[2])[0],
+                         quad(poly, energies[0], energies[1])[0])
+            p = abs(integrals[0] / integrals[1])
         counts_0 = np.random.binomial(1, p, size=counts).sum()
         return counts_0, counts - counts_0

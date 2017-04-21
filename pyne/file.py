@@ -40,6 +40,14 @@ class File:
         attrs.update(kwargs)
         self.save_attributes(attrs)
 
+    def remove_attribute(self, key):
+        attrs = self.read_attributes()
+        try:
+            del attrs[key]
+            self.save_attributes(attrs)
+        except KeyError:
+            print('Attribute {} not present'.format(key))
+
 
 class FileH5:
     def __init__(self, filename, access='r', *, open=False):

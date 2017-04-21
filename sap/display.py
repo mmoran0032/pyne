@@ -22,7 +22,7 @@ class Display:
         tiny = np.finfo(np.float64).tiny
         counts = np.where(detector.counts > 0, detector.counts, tiny)
         ax.semilogy(detector.energies, counts,
-                    nonposy='clip', linestyle='steps-mid')
+                    nonposy='clip', linestyle='steps')
         ax = self._adjust_ax(ax, fit_pars, energy_range, xlim, ylim)
         ax.set_title(detector.name)
         return fig, ax
@@ -33,7 +33,7 @@ class Display:
         axis = axes.ravel()
         for ax, adc in zip(axis, self.data.adc[16:]):
             ax.semilogy(adc.energies, adc.counts,
-                        nonposy='clip', linestyle='steps-mid')
+                        nonposy='clip', linestyle='steps')
             ax = self._adjust_ax(ax, fit_pars, energy_range, xlim, ylim)
             ax.set_title(adc.name)
         fig.tight_layout()
