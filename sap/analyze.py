@@ -1,8 +1,4 @@
 
-# NOTE: Analyzer needs to change based on detector response. Will count all
-#       counts above the proton energy threshold as valid alpha particles. If
-#       no discernable proton peak, count all counts. Proton energies have been
-#       saved in meta.json for the final runs at each energy.
 
 import numpy as np
 from scipy.optimize import curve_fit
@@ -11,9 +7,8 @@ from .functions import gaussian
 
 
 class Analyzer:
-    def __init__(self, data, name):
+    def __init__(self, data):
         self.data = data
-        self.name = name
 
     def determine_energy_window(self, sigma_window=(7, 7)):
         good_detectors = self.data.adc[16:]
