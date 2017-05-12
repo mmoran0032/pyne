@@ -3,9 +3,8 @@
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.signal import find_peaks_cwt
-import statsmodels.api as sm
 
-from .functions import gaussian
+from .functions import gaussian, linear
 
 
 class Calibrator:
@@ -48,7 +47,5 @@ class Calibrator:
 
     def _find_calibration(self, centers, bins):
         calibration_energies = [3182.69, 5485.56]  # 148Gd/241Am mixed source
-        centers = sm.add_constant(centers)
-        bins = sm.add_constant(bins[:-1])
-        result = sm.OLS(calibration_energies, centers).fit()
-        return result.predict(bins)
+        pars, _ = curve_fit(linear, centers, calibration_energies)
+        return linear(bins, *pars)
