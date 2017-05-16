@@ -35,7 +35,7 @@ class Detector:
 class DetectorArray(Sequence):
     def __init__(self, num_detectors, channels):
         self.number = num_detectors
-        self.detectors = [Detector('adc_{:02d}'.format(i), channels)
+        self.detectors = [Detector(f'adc_{i:02d}', channels)
                           for i in range(self.number)]
 
     def __getitem__(self, index):

@@ -76,7 +76,7 @@ class EVTData(Data):
             adc.bins, adc.counts, adc.energies = self.f.read_adc(adc.name)
 
     def save_data(self):
-        print('writing to {}...'.format(self.data_file))
+        print(f'writing to {self.data_file}...')
         self.f.save_attributes(self.run_information)
         for adc in self.adc:
             self.f.save_adc(adc.name, adc.bins, adc.counts, adc.energies)
@@ -89,13 +89,13 @@ class CHNData(Data):
         self.buffer = buffer.CHN_Buffer
 
     def read_data(self):
-        print('reading from {}...'.format(self.data_file))
+        print(f'reading from {self.data_file}...')
         self.run_information = self.f.read_attributes()
         adc = self.adc
         adc.bins, adc.counts, adc.energies = self.f.read_adc('adc')
 
     def save_data(self):
-        print('writing to {}...'.format(self.data_file))
+        print(f'writing to {self.data_file}...')
         self.f.save_attributes(self.run_information)
         adc = self.adc
         self.f.save_adc(adc.name, adc.bins, adc.counts, adc.energies)

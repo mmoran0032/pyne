@@ -45,4 +45,4 @@ class File:
             del attrs[key]
             self.save_attributes(attrs)
         except KeyError:
-            print('Attribute {} not present'.format(key))
+            print(f'Attribute {key} not present')
