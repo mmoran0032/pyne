@@ -18,11 +18,9 @@ class Display:
             detector = self.data[detector]
         fig = plt.figure(figsize=figsize)
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-        # nonposy='clip' wasn't working, so do it yourself
         tiny = np.finfo(np.float64).tiny
         counts = np.where(detector.counts > 0, detector.counts, tiny)
-        ax.semilogy(detector.energies, counts,
-                    nonposy='clip', linestyle='steps')
+        ax.plot(detector.energies, counts, linestyle='steps')
         ax = self._adjust_ax(ax, fit_pars, energy_range, xlim, ylim)
         ax.set_title(detector.name)
         return fig, ax
@@ -32,8 +30,7 @@ class Display:
         fig, axes = plt.subplots(nrows=4, ncols=4, figsize=figsize)
         axis = axes.ravel()
         for ax, adc in zip(axis, self.data.adc[16:]):
-            ax.semilogy(adc.energies, adc.counts,
-                        nonposy='clip', linestyle='steps')
+            ax.plot(adc.energies, adc.counts, linestyle='steps')
             ax = self._adjust_ax(ax, fit_pars, energy_range, xlim, ylim)
             ax.set_title(adc.name)
         fig.tight_layout()
@@ -43,7 +40,7 @@ class Display:
         counts = [0, *counts, 0]
         fig = plt.figure(figsize=figsize)
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-        ax.plot(np.arange(18), counts, linestyle='steps-mid')
+        ax.plot(np.arange(18), counts, linestyle='steps-mid', lw=2)
         ax.set_xticks(np.arange(16) + 1)
         ax.set_xlim((0.5, 16.5))
         ax.set_ylim(ylim)
@@ -55,6 +52,7 @@ class Display:
             ax.semilogy(x, gaussian(x, *fit_pars), 'k-', lw=1)
         if energy_range is not None:
             ax.vlines(energy_range, *ylim, 'k', linestyles='dashed', lw=1)
+        ax.set_yscale('log', nonposy='clip')
         ax.set_ylim(ylim)
         ax.set_xlim(xlim)
         return ax
