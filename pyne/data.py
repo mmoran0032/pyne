@@ -18,6 +18,7 @@ class Data:
         if self.f:
             self.read_data()
         else:
+            assert self.buffer_file is not None
             print('reading from buffer...this may take some time')
             self.read_buffer()
             self.convert_data()
@@ -68,6 +69,9 @@ class EVTData(Data):
         super().__init__(data_file, buffer_file)
         self.adc = detector.DetectorArray(32, 4096)
         self.buffer = buffer.EVT_Buffer
+
+    def __getitem__(self, index):
+        return self.adc[index]
 
     def read_data(self):
         print('reading from {}...'.format(self.data_file))

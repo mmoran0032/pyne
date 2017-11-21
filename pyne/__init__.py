@@ -1,7 +1,7 @@
 
 
-__version__ = '0.6.1'
-__date__ = '2017-05-15'
+__version__ = '0.6.2'
+__date__ = '2017-11-21'
 __author__ = 'Mike Moran'
 
 from .buffer import *
