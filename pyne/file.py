@@ -13,6 +13,7 @@ class File:
             self.directory.mkdir()
         self.metadata_file = self.directory / 'meta.json'
         self.adc_file = self.directory / '{}.npz'
+        self.adc_file_csv = self.directory / '{}.csv'
 
     def __bool__(self):
         return len(list(self.directory.iterdir())) > 0
@@ -24,6 +25,8 @@ class File:
     def save_adc(self, name, bins, counts, energies):
         np.savez(str(self.adc_file).format(name),
                  bins=bins, counts=counts, energies=energies)
+        np.savetxt(str(self.adc_file_csv).format(name),
+                   (bins, counts, energies))
 
     def read_attributes(self):
         with self.metadata_file.open('r') as f:
