@@ -2,11 +2,12 @@
 
 import pytest
 
+from pyne import Detector
+
 
 @pytest.fixture
 def detector():
-    from . import detector
-    return detector.Detector(name='test', channels=5)
+    return Detector(name='test', channels=5)
 
 
 def test_add_event(detector):

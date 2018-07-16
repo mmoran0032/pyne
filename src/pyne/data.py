@@ -13,6 +13,8 @@ class Data:
         self.data_file = data_file
         self.run_information = {}
         self.f = file.File(self.data_file)
+        self.adc = None
+        self.buffer = buffer.Buffer
 
     def load_data(self):
         if self.f:

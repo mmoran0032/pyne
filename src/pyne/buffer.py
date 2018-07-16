@@ -18,6 +18,7 @@ class Buffer:
         self.buffer_size_bytes = buffer_size * word_size
         self.header_size_bytes = header_size * word_size
         self.word_size = word_size
+        self.f = None
         self.Type = None
         self.ValidBit = None
 

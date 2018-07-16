@@ -1,15 +1,16 @@
 
 
+from pathlib import Path
 from setuptools import setup, find_packages
 
 
-with open('README.rst', 'r') as f:
+with Path('README.rst').open() as f:
     readme = f.read()
 
-with open('LICENSE', 'r') as f:
+with Path('LICENSE').open() as f:
     license = f.read()
 
-with open('pyne/__init__.py', 'r') as f:
+with Path('src/pyne/__init__.py').open() as f:
     data = f.read().split('\n')
     for line in data:
         if line.startswith('__version__'):
@@ -26,5 +27,7 @@ setup(
     author_email='mmoran0032@gmail.com',
     url=r'https://github.com/mmoran0032/pyne',
     license=license,
-    packages=find_packages(exclude=('tests',))
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    include_package_data=True
 )
