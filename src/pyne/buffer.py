@@ -66,7 +66,10 @@ class Buffer:
         return hexlify(b).decode('utf-8')
 
 
-class EVT_Buffer(Buffer):
+class EventBuffer(Buffer):
+    """
+    Buffer handling .EVT files
+    """
     def __init__(self, filename):
         super().__init__(filename, buffer_size=13328, header_size=16)
         self.Type = IntEnum('Type',
@@ -124,7 +127,10 @@ class EVT_Buffer(Buffer):
         return self.convert_header(buffer)
 
 
-class CHN_Buffer(Buffer):
+class ChannelBuffer(Buffer):
+    """
+    Buffer handling .Chn files
+    """
     def __init__(self, filename):
         super().__init__(filename, buffer_size=16)
         self.Type = IntEnum('Type',
