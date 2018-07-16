@@ -1,8 +1,0 @@
-*.txt
-*.ipynb_checkpoints
-*.egg-info
-dist/
-build/
-.cache/
-
-.coverage
