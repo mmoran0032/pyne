@@ -56,3 +56,4 @@ class Display:
         ax.set_ylim(ylim)
         ax.set_xlim(xlim)
         return ax
+

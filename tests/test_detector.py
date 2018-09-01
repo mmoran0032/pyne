@@ -31,3 +31,4 @@ def test_binning(detector):
     assert detector.counts[2] == 3
     assert detector.counts[3] == 2
     assert detector.counts[4] == 1
+
