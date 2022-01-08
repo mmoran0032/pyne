@@ -1,3 +1,5 @@
+No active development. See `Gitlab`_ for details.
+
 PyNE -- Python for Nuclear Experiments
 ======================================
 
@@ -58,3 +60,4 @@ target effects to simulate a full reaction.
 .. _`evt2root utility`: https://github.com/ksmith0/evt2root
 .. _`ROOT`: https://root.cern.ch/
 .. _`SRIM`: http://www.srim.org/
+.. _`Gitlab`: https://gitlab.com/mmoran0032/pyne
